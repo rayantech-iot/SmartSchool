@@ -1,0 +1,56 @@
+<!-- views/eleve/emploiDuTemps.ejs — Emploi du temps de la classe -->
+<div class="space-y-8 animate-fadeIn">
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between border-b border-gray-200 pb-4 no-print">
+    <div>
+      <h1 class="text-3xl font-bold font-alkalami text-gray-800">Mon Emploi du Temps</h1>
+      <p class="text-sm text-gray-500 mt-1">Planning hebdomadaire de votre classe.</p>
+    </div>
+    <div class="mt-4 md:mt-0 space-x-2">
+      <a href="/eleve/dashboard" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-xl transition-all inline-flex items-center">
+        <i class="fas fa-arrow-left mr-1"></i> Mon espace
+      </a>
+      <button onclick="window.print()" class="px-4 py-2 bg-primary hover:bg-blue-800 text-white text-sm font-bold rounded-xl shadow-md transition-all inline-flex items-center">
+        <i class="fas fa-print mr-1.5"></i> Exporter / Imprimer
+      </button>
+    </div>
+  </div>
+
+  <div id="emploi-du-temps" class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
+    <div class="mb-4 flex flex-wrap gap-2 text-xs text-amber-800 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2">
+      <i class="fas fa-coffee mt-0.5"></i>
+      <span>Pauses : <% pauses.forEach((p,i)=>{ %><%= p.debut %>-<%= p.fin %><%= i<pauses.length-1?' · ':'' %><% }) %></span>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
+      <% jours.forEach(jour => { %>
+        <div class="bg-slate-50/50 p-4 rounded-2xl border border-gray-100 min-h-[200px]">
+          <span class="block text-center font-bold text-xs uppercase text-gray-400 tracking-wider pb-2 border-b border-gray-200 mb-3"><%= jour %></span>
+          <% construireTimelineJour(planning[jour] || []).forEach(item => { %>
+            <% if (item.type === 'pause') { %>
+              <div class="bg-amber-50 border border-amber-200 border-dashed rounded-xl p-2 mb-2 text-center">
+                <span class="block text-[10px] font-bold text-amber-800"><%= item.label %></span>
+                <span class="text-[10px] text-amber-700 font-mono"><%= item.debut %> – <%= item.fin %></span>
+              </div>
+            <% } else {
+              const s = item.seance;
+            %>
+              <div class="bg-white p-3 rounded-xl border border-gray-100 shadow-sm mb-2 relative overflow-hidden">
+                <div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+                <span class="block text-[10px] font-bold text-gray-400 font-mono"><%= item.debut %> – <%= item.fin %></span>
+                <h4 class="font-bold text-gray-900 text-xs"><%= s.matiere ? s.matiere.nom : 'Matière' %></h4>
+                <% if (s.professeur && s.professeur.utilisateur) { %>
+                  <p class="text-[10px] text-gray-500">Prof. <%= s.professeur.utilisateur.nom %></p>
+                <% } %>
+                <% if (s.salle) { %>
+                  <span class="text-[10px] text-primary font-mono font-bold">Salle <%= s.salle %></span>
+                <% } %>
+              </div>
+            <% } %>
+          <% }) %>
+        </div>
+      <% }) %>
+    </div>
+    <% if (!emploiDuTemps) { %>
+      <p class="text-center text-gray-400 py-8 mt-4">Aucun emploi du temps configuré pour votre classe.</p>
+    <% } %>
+  </div>
+</div>

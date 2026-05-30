@@ -1,0 +1,17 @@
+<div class="min-h-screen flex items-center justify-center bg-primary px-4">
+  <div class="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
+    <h1 class="text-2xl font-bold font-alkalami text-primary text-center mb-2">Changer votre mot de passe</h1>
+    <p class="text-sm text-gray-500 text-center mb-6">Obligatoire après réinitialisation par l'administrateur.</p>
+    <% if (flash && flash.error && flash.error.length) { %><div class="mb-4 p-3 bg-red-50 text-red-700 text-sm rounded-xl"><%= flash.error[0] %></div><% } %>
+    <form action="/auth/changer-mot-de-passe" method="POST" class="space-y-4">
+      <%- include('../partials/csrfField') %>
+      <div><label class="block text-sm font-semibold mb-1">Mot de passe actuel</label>
+        <input type="password" name="motDePasseActuel" class="w-full rounded-xl border px-3 py-2" /></div>
+      <div><label class="block text-sm font-semibold mb-1">Nouveau mot de passe (min. 8 car.)</label>
+        <input type="password" name="motDePasse" required minlength="8" class="w-full rounded-xl border px-3 py-2" /></div>
+      <div><label class="block text-sm font-semibold mb-1">Confirmer</label>
+        <input type="password" name="motDePasseConfirm" required minlength="8" class="w-full rounded-xl border px-3 py-2" /></div>
+      <button type="submit" class="w-full py-3 bg-primary text-white font-bold rounded-xl">Enregistrer</button>
+    </form>
+  </div>
+</div>

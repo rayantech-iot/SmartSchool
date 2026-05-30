@@ -1,0 +1,117 @@
+<div class="space-y-8 animate-fadeIn">
+  <div class="page-header flex flex-col md:flex-row md:items-center md:justify-between">
+    <div>
+      <h1 class="text-3xl font-bold font-alkalami">Espace Administration</h1>
+      <p class="mt-1 text-blue-100 text-sm">Année scolaire <span id="annee-label"><%= anneeScolaire %></span></p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="card-widget flex items-center space-x-4">
+      <div class="w-12 h-12 rounded-xl bg-blue-100 text-primary flex items-center justify-center"><i class="fas fa-user-graduate text-2xl"></i></div>
+      <div><p class="text-sm text-gray-400 uppercase">Élèves actifs</p><h3 class="text-2xl font-bold"><%= stats.totalEleves %></h3></div>
+    </div>
+    <div class="card-widget flex items-center space-x-4">
+      <div class="w-12 h-12 rounded-xl bg-blue-100 text-secondary flex items-center justify-center"><i class="fas fa-chalkboard-teacher text-2xl"></i></div>
+      <div><p class="text-sm text-gray-400 uppercase">Professeurs actifs</p><h3 class="text-2xl font-bold"><%= stats.totalProfesseurs %></h3></div>
+    </div>
+    <div class="card-widget flex items-center space-x-4">
+      <div class="w-12 h-12 rounded-xl bg-background text-primary flex items-center justify-center border"><i class="fas fa-school text-2xl"></i></div>
+      <div><p class="text-sm text-gray-400 uppercase">Classes</p><h3 class="text-2xl font-bold"><%= stats.totalClasses %></h3></div>
+    </div>
+    <div class="card-widget flex items-center space-x-4">
+      <div class="w-12 h-12 rounded-xl bg-blue-100 text-primary flex items-center justify-center"><i class="fas fa-book text-2xl"></i></div>
+      <div><p class="text-sm text-gray-400 uppercase">Matières</p><h3 class="text-2xl font-bold"><%= stats.totalMatieres %></h3></div>
+    </div>
+  </div>
+
+  <div class="card-widget space-y-4">
+    <div class="flex flex-col sm:flex-row sm:justify-between gap-3">
+      <h2 class="text-xl font-bold font-alkalami"><i class="fas fa-chart-pie text-primary mr-2"></i> Statistiques</h2>
+      <div class="flex flex-wrap gap-2">
+        <select id="filtre-type" class="rounded-xl border px-3 py-2 text-sm">
+          <option value="effectifs">Effectifs globaux</option>
+          <option value="roles">Utilisateurs par rôle</option>
+          <option value="classes_cycle">Classes par cycle</option>
+          <option value="eleves_cycle">Élèves par cycle</option>
+          <option value="remplissage">Remplissage des classes</option>
+        </select>
+        <select id="filtre-annee" class="rounded-xl border px-3 py-2 text-sm">
+          <option value="<%= anneeScolaire %>" selected><%= anneeScolaire %> (courante)</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="bg-background rounded-xl p-4 border lg:col-span-2">
+        <canvas id="chart-main" height="100"></canvas>
+      </div>
+      <div class="bg-background rounded-xl p-4 border">
+        <canvas id="chart-secondary" height="200"></canvas>
+      </div>
+      <div class="bg-background rounded-xl p-4 border">
+        <canvas id="chart-tertiary" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+  const COLORS = ['#1E3A8A','#3B82F6','#60A5FA','#93C5FD','#BFDBFE','#2563EB','#1D4ED8'];
+  let charts = {};
+
+  function destroyChart(id) {
+    if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+  }
+
+  function makeChart(id, type, title, labels, data) {
+    destroyChart(id);
+    const el = document.getElementById(id);
+    if (!el) return;
+    charts[id] = new Chart(el, {
+      type,
+      data: {
+        labels,
+        datasets: [{
+          label: title,
+          data,
+          backgroundColor: type === 'doughnut' ? COLORS : '#3B82F6',
+          borderRadius: type === 'bar' ? 6 : 0
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { title: { display: true, text: title } },
+        scales: type === 'bar' ? { y: { beginAtZero: true, max: title.includes('%') ? 100 : undefined } } : {}
+      }
+    });
+  }
+
+  async function loadCharts() {
+    const annee = document.getElementById('filtre-annee').value;
+    const filtre = document.getElementById('filtre-type').value;
+    document.getElementById('annee-label').textContent = annee;
+
+    const res = await fetch(`/admin/api/dashboard-stats?annee=${encodeURIComponent(annee)}&filtre=${filtre}`);
+    const main = await res.json();
+    makeChart('chart-main', main.type, main.title, main.labels, main.data);
+
+    const [roles, cycles] = await Promise.all([
+      fetch(`/admin/api/dashboard-stats?annee=${encodeURIComponent(annee)}&filtre=roles`).then(r => r.json()),
+      fetch(`/admin/api/dashboard-stats?annee=${encodeURIComponent(annee)}&filtre=classes_cycle`).then(r => r.json())
+    ]);
+    if (filtre !== 'roles') makeChart('chart-secondary', 'doughnut', roles.title, roles.labels, roles.data);
+    else makeChart('chart-secondary', 'bar', cycles.title, cycles.labels, cycles.data);
+    if (filtre !== 'eleves_cycle') {
+      const eleves = await fetch(`/admin/api/dashboard-stats?annee=${encodeURIComponent(annee)}&filtre=eleves_cycle`).then(r => r.json());
+      makeChart('chart-tertiary', 'bar', eleves.title, eleves.labels, eleves.data);
+    } else {
+      const eff = await fetch(`/admin/api/dashboard-stats?annee=${encodeURIComponent(annee)}&filtre=effectifs`).then(r => r.json());
+      makeChart('chart-tertiary', 'bar', eff.title, eff.labels, eff.data);
+    }
+  }
+
+  document.getElementById('filtre-annee').addEventListener('change', loadCharts);
+  document.getElementById('filtre-type').addEventListener('change', loadCharts);
+  loadCharts();
+</script>

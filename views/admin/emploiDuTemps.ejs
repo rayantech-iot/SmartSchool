@@ -1,0 +1,133 @@
+<div class="space-y-6">
+  <div class="flex justify-between border-b pb-4">
+    <h1 class="text-3xl font-bold font-alkalami">Emploi du temps</h1>
+    <a href="/admin/dashboard" class="text-sm text-gray-500">← Dashboard</a>
+  </div>
+
+  <div class="bg-blue-50 border border-blue-100 rounded-xl p-3 text-sm text-blue-900">
+    <strong>Pauses obligatoires :</strong>
+    <% pauses.forEach((p, i) => { %>
+      <%= p.label %> (<%= p.debut %> – <%= p.fin %>)<%= i < pauses.length - 1 ? ' · ' : '' %>
+    <% }) %>
+  </div>
+
+  <div class="flex flex-wrap gap-3 bg-white p-4 rounded-xl border items-center">
+    <form method="GET" action="/admin/emploiDuTemps" class="flex flex-wrap gap-3 items-center">
+      <select name="classe_id" class="rounded-xl border px-3 py-2 text-sm min-w-[200px]">
+        <option value="">— Choisir une classe —</option>
+        <% classes.forEach(c => { %>
+          <option value="<%= c.id %>" <%= classeId == c.id ? 'selected' : '' %>><%= c.niveau %> <%= c.nom %></option>
+        <% }) %>
+      </select>
+      <select name="semestre" class="rounded-xl border px-3 py-2 text-sm">
+        <option value="annuel" <%= semestre === 'annuel' ? 'selected' : '' %>>Annuel</option>
+        <option value="semestre1" <%= semestre === 'semestre1' ? 'selected' : '' %>>Semestre 1</option>
+        <option value="semestre2" <%= semestre === 'semestre2' ? 'selected' : '' %>>Semestre 2</option>
+      </select>
+      <button type="submit" class="px-4 py-2 bg-primary text-white rounded-xl text-sm">Afficher</button>
+    </form>
+    <% if (classeId) { %>
+    <form action="/admin/emploiDuTemps/generer/<%= classeId %>" method="POST" class="inline">
+      <%- include('../partials/csrfField') %>
+      <button type="submit" class="px-4 py-2 bg-secondary text-white rounded-xl text-sm" onclick="return confirm('Régénérer l\'EDT de cette classe ? Les séances actuelles seront remplacées.')">
+        <i class="fas fa-magic mr-1"></i> Générer (cette classe)
+      </button>
+    </form>
+    <% } %>
+    <form action="/admin/emploiDuTemps/generer-all" method="POST" class="inline">
+      <%- include('../partials/csrfField') %>
+      <button type="submit" class="px-5 py-2 bg-primary text-white rounded-xl text-sm font-semibold shadow-sm" onclick="return confirm('Générer les emplois du temps de TOUTES les classes de l\'année en cours ?\n\nRespecte : volumes h/sem par matière, professeurs affectés, conflits prof/classe/salle, pauses 10h-10h30 et 12h-14h.')">
+        <i class="fas fa-bolt mr-1"></i> Générer toutes les classes
+      </button>
+    </form>
+  </div>
+
+  <% if (classeId && classeSelectionnee) { %>
+  <div class="bg-white rounded-2xl border p-6">
+    <h2 class="font-bold text-lg mb-4"><%= classeSelectionnee.niveau %> <%= classeSelectionnee.nom %> — <%= semestre %></h2>
+    <% if (!emploiDuTemps) { %>
+      <p class="text-gray-500 italic">Aucun emploi du temps pour ce semestre.</p>
+    <% } else { %>
+    <div class="grid grid-cols-5 gap-3">
+      <% jours.forEach(jour => { %>
+      <div class="bg-gray-50 rounded-xl p-3 min-h-[160px] border">
+        <p class="text-xs font-bold uppercase text-gray-400 text-center mb-2"><%= jour %></p>
+        <% construireTimelineJour(planning[jour] || []).forEach(item => { %>
+          <% if (item.type === 'pause') { %>
+            <div class="bg-amber-50 border border-amber-200 border-dashed rounded-lg p-2 mb-2 text-xs text-center">
+              <div class="font-bold text-amber-800"><%= item.label %></div>
+              <div class="text-amber-700 font-mono text-[10px]"><%= item.debut %> – <%= item.fin %></div>
+            </div>
+          <% } else {
+            const s = item.seance;
+          %>
+            <div class="bg-white border rounded-lg p-2 mb-2 text-xs">
+              <div class="font-bold text-primary font-mono"><%= item.debut %> – <%= item.fin %></div>
+              <div class="font-semibold"><%= s.matiere ? s.matiere.nom : '' %></div>
+              <div class="text-gray-500"><%= s.professeur && s.professeur.utilisateur ? s.professeur.utilisateur.prenom + ' ' + s.professeur.utilisateur.nom : '' %></div>
+              <% if (s.salle) { %><div class="text-gray-400">Salle <%= s.salle %></div><% } %>
+              <form action="/admin/emploiDuTemps/seance/<%= s.id %>/delete" method="POST" onsubmit="return confirm('Supprimer ?')" class="mt-1">
+                <%- include('../partials/csrfField') %>
+                <button type="submit" class="text-red-500 text-[10px]">Supprimer</button>
+              </form>
+            </div>
+          <% } %>
+        <% }) %>
+      </div>
+      <% }) %>
+    </div>
+    <% } %>
+  </div>
+
+  <% if (emploiDuTemps) { %>
+  <div class="bg-white rounded-2xl border p-6 max-w-md">
+    <h3 class="font-bold mb-2">Ajouter une séance</h3>
+    <p class="text-xs text-gray-500 mb-4">Créneaux conseillés : <% creneaux.forEach((c,i)=>{ %><%= c.debut %>-<%= c.fin %><%= i<creneaux.length-1?', ':'' %><% }) %></p>
+    <form action="/admin/emploiDuTemps/seance/add" method="POST" class="space-y-3">
+      <%- include('../partials/csrfField') %>
+      <input type="hidden" name="emploi_du_temps_id" value="<%= emploiDuTemps.id %>" />
+      <select name="matiere_id" id="mat-select" required class="w-full rounded-xl border px-3 py-2 text-sm">
+        <% matieres.forEach(m => { %><option value="<%= m.id %>"><%= m.nom %></option><% }) %>
+      </select>
+      <select name="professeur_id" id="prof-select" required class="w-full rounded-xl border px-3 py-2 text-sm">
+        <% professeurs.forEach(p => { %>
+          <option value="<%= p.id %>" data-matieres="<%= (p.matieres||[]).map(m=>m.id).join(',') %>">
+            <%= p.utilisateur ? p.utilisateur.prenom + ' ' + p.utilisateur.nom : 'Prof #'+p.id %>
+          </option>
+        <% }) %>
+      </select>
+      <select name="jour" required class="w-full rounded-xl border px-3 py-2 text-sm">
+        <% jours.forEach(j => { %><option value="<%= j %>"><%= j %></option><% }) %>
+      </select>
+      <div class="grid grid-cols-2 gap-2">
+        <select name="heure_debut" required class="rounded-xl border px-3 py-2 text-sm">
+          <% creneaux.forEach(c => { %><option value="<%= c.debut %>"><%= c.debut %></option><% }) %>
+        </select>
+        <select name="heure_fin" required class="rounded-xl border px-3 py-2 text-sm">
+          <% creneaux.forEach(c => { %><option value="<%= c.fin %>"><%= c.fin %></option><% }) %>
+        </select>
+      </div>
+      <input type="text" name="salle" placeholder="Salle (optionnel)" value="<%= classeSelectionnee.salle || '' %>" class="w-full rounded-xl border px-3 py-2 text-sm" />
+      <button type="submit" class="w-full py-2 bg-primary text-white rounded-xl font-semibold text-sm">Ajouter</button>
+    </form>
+  </div>
+  <% } %>
+  <% } else { %>
+  <p class="text-gray-500 text-center py-12">Sélectionnez une classe pour afficher son emploi du temps, ou utilisez « Générer toutes les classes ».</p>
+  <% } %>
+</div>
+
+<script>
+  const ms = document.getElementById('mat-select'), ps = document.getElementById('prof-select');
+  if (ms && ps) {
+    function filter() {
+      const mid = ms.value;
+      Array.from(ps.options).forEach(o => {
+        const m = (o.dataset.matieres||'').split(',').filter(Boolean);
+        o.hidden = mid && m.length && !m.includes(mid);
+      });
+    }
+    ms.addEventListener('change', filter);
+    filter();
+  }
+</script>

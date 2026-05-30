@@ -1,0 +1,13 @@
+<div class="max-w-lg mx-auto space-y-6">
+  <h1 class="text-2xl font-bold font-alkalami">Modifier la classe</h1>
+  <form action="/admin/classes/<%= classe.id %>/update" method="POST" class="bg-white rounded-2xl border p-6 space-y-4">
+    <%- include('../partials/csrfField') %>
+    <div><label class="block text-sm font-semibold mb-1">Nom</label><input type="text" name="nom" required value="<%= classe.nom %>" class="w-full rounded-xl border px-3 py-2" /></div>
+    <div><label class="block text-sm font-semibold mb-1">Niveau</label><input type="text" name="niveau" required value="<%= classe.niveau %>" class="w-full rounded-xl border px-3 py-2" /></div>
+    <div><label class="block text-sm font-semibold mb-1">Capacité max</label>
+      <input type="number" name="capacite" required min="<%= classe.eleves ? classe.eleves.length : 0 %>" max="60" value="<%= classe.capacite %>" class="w-full rounded-xl border px-3 py-2" />
+      <p class="text-xs text-gray-500 mt-1"><%= classe.eleves ? classe.eleves.length : 0 %> élève(s) inscrit(s)</p></div>
+    <button type="submit" class="w-full py-3 bg-primary text-white font-bold rounded-xl">Enregistrer</button>
+    <a href="/admin/classes" class="block text-center text-sm text-gray-500">Annuler</a>
+  </form>
+</div>

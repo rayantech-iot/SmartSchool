@@ -1,0 +1,86 @@
+<!-- partials/bulletinAffichage.ejs — Affichage officiel d'un bulletin -->
+<div class="bg-white rounded-3xl border border-gray-200 shadow-xl overflow-hidden p-8 max-w-4xl mx-auto relative print:border-none print:shadow-none print:p-0" id="bulletin-export">
+  <div class="absolute right-8 top-8 w-24 h-24 opacity-10 flex items-center justify-center pointer-events-none">
+    <i class="fas fa-graduation-cap text-8xl text-primary"></i>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4 border-b-2 border-gray-900 pb-6 mb-8 text-xs font-semibold uppercase">
+    <div class="space-y-1">
+      <p class="text-primary font-bold text-sm tracking-wider">République Togolaise</p>
+      <p class="text-[10px] text-gray-500">Travail — Liberté — Patrie</p>
+      <p class="text-slate-700 font-bold mt-2">SmartSchool — Établissement Scolaire</p>
+    </div>
+    <div class="text-right space-y-1">
+      <p class="text-gray-900">Année Académique : <%= bulletin.annee_scolaire %></p>
+      <p class="text-gray-500">Généré le : <%= new Date(bulletin.date_generation).toLocaleDateString('fr-FR') %></p>
+    </div>
+  </div>
+
+  <div class="bg-slate-50 border border-gray-200 rounded-2xl p-6 grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 text-sm">
+    <div class="space-y-1.5">
+      <span class="text-xs uppercase font-bold text-gray-400 block tracking-wider">Élève</span>
+      <p class="text-lg font-bold text-gray-800">
+        <%= bulletin.eleve && bulletin.eleve.utilisateur ? bulletin.eleve.utilisateur.prenom : '' %>
+        <%= bulletin.eleve && bulletin.eleve.utilisateur ? bulletin.eleve.utilisateur.nom : '' %>
+      </p>
+    </div>
+    <div class="space-y-1.5 md:text-right">
+      <span class="text-xs uppercase font-bold text-gray-400 block tracking-wider">Classe & Période</span>
+      <p class="text-lg font-bold text-gray-800"><%= bulletin.classe ? bulletin.classe.niveau + ' ' + bulletin.classe.nom : 'N/A' %></p>
+      <span class="inline-block px-3 py-1 bg-primary text-white font-bold text-xs rounded-full uppercase"><%= bulletin.periode %></span>
+    </div>
+  </div>
+
+  <div class="overflow-hidden border border-gray-300 rounded-2xl mb-8">
+    <table class="min-w-full divide-y divide-gray-300 text-sm">
+      <thead class="bg-slate-900 text-white uppercase text-xs">
+        <tr>
+          <th class="px-6 py-3.5 text-left font-semibold">Matières</th>
+          <th class="px-6 py-3.5 text-center font-semibold">Coef</th>
+          <th class="px-6 py-3.5 text-center font-semibold">Notes</th>
+          <th class="px-6 py-3.5 text-center font-semibold">Moyenne / 20</th>
+          <th class="px-6 py-3.5 text-left font-semibold">Appréciation</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        <% if (typeof noteParMatiere !== 'undefined') { noteParMatiere.forEach(g => { %>
+          <tr>
+            <td class="px-6 py-4">
+              <div class="font-bold text-gray-900"><%= g.matiere.nom %></div>
+              <div class="text-xs text-gray-500 font-mono"><%= g.matiere.code %></div>
+            </td>
+            <td class="px-6 py-4 text-center font-semibold"><%= g.matiere.coefficient %></td>
+            <td class="px-6 py-4 text-center">
+              <div class="flex flex-wrap justify-center gap-1">
+                <% g.notes.forEach(n => { %>
+                  <span class="px-1.5 py-0.5 bg-slate-100 rounded text-xs font-semibold"><%= n.valeur %></span>
+                <% }) %>
+              </div>
+            </td>
+            <td class="px-6 py-4 text-center">
+              <span class="font-bold <%= parseFloat(g.moyenne) >= 10 ? 'text-secondary' : 'text-red-500' %>"><%= g.moyenne %></span>
+            </td>
+            <td class="px-6 py-4 text-xs text-gray-500 italic"><%= g.notes[g.notes.length-1].appreciation || '—' %></td>
+          </tr>
+        <% }) } %>
+        <% if (!noteParMatiere || noteParMatiere.length === 0) { %>
+          <tr><td colspan="5" class="px-6 py-12 text-center text-gray-400">Aucune note pour cette période.</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 border-t-2 border-slate-900 pt-6">
+    <div class="bg-slate-900 text-white p-5 rounded-2xl shadow-md">
+      <span class="text-xs uppercase font-bold text-slate-400 tracking-wider">Moyenne Générale</span>
+      <div class="mt-2 flex items-baseline">
+        <span class="text-3xl font-extrabold"><%= bulletin.moyenne_generale || 'N/A' %></span>
+        <span class="ml-1 text-sm text-slate-400">/ 20</span>
+      </div>
+    </div>
+    <div class="bg-slate-50 border border-gray-200 p-5 rounded-2xl md:col-span-2">
+      <span class="text-xs uppercase font-bold text-gray-400 tracking-wider block">Appréciation générale</span>
+      <p class="text-base font-bold text-gray-800 mt-2"><%= bulletin.appreciation_generale || '—' %></p>
+    </div>
+  </div>
+</div>

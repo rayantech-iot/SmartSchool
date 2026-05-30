@@ -1,0 +1,65 @@
+<!-- views/parent/absences.ejs — Justification des absences de l'enfant -->
+<div class="space-y-8 animate-fadeIn">
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between border-b border-gray-200 pb-4">
+    <div>
+      <h1 class="text-3xl font-bold font-alkalami text-gray-800">Absences de mon enfant</h1>
+      <p class="text-sm text-gray-500 mt-1">Consultez et justifiez les absences enregistrées par l'établissement.</p>
+    </div>
+    <a href="/parent/dashboard" class="mt-4 md:mt-0 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-xl transition-all inline-flex items-center">
+      <i class="fas fa-arrow-left mr-1"></i> Tableau de bord
+    </a>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="card-widget text-center">
+      <p class="text-sm text-gray-400 uppercase">Total</p>
+      <p class="text-3xl font-bold"><%= totalAbsences %></p>
+    </div>
+    <div class="card-widget text-center">
+      <p class="text-sm text-gray-400 uppercase">Justifiées</p>
+      <p class="text-3xl font-bold text-secondary"><%= absencesJustifiees %></p>
+    </div>
+    <div class="card-widget text-center">
+      <p class="text-sm text-gray-400 uppercase">Non justifiées</p>
+      <p class="text-3xl font-bold text-red-500"><%= absencesNonJustifiees %></p>
+    </div>
+  </div>
+
+  <div class="space-y-4">
+    <% absences.forEach(a => { %>
+      <div class="card-widget <%= a.justifiee ? 'border-l-4 border-secondary' : 'border-l-4 border-red-500' %>">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <p class="font-bold text-gray-800 text-lg"><%= new Date(a.date).toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %></p>
+            <p class="text-sm text-gray-500 mt-1">Motif : <%= a.motif || 'Non renseigné' %></p>
+            <% if (a.justifiee) { %>
+              <span class="inline-block mt-2 px-3 py-1 bg-blue-100 text-primary text-xs font-bold rounded-full">
+                <i class="fas fa-check mr-1"></i> Justifiée le <%= new Date(a.date_justification).toLocaleDateString('fr-FR') %>
+              </span>
+            <% } else { %>
+              <span class="inline-block mt-2 px-3 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full">En attente de justification</span>
+            <% } %>
+          </div>
+
+          <% if (!a.justifiee) { %>
+            <form action="/parent/absences/<%= a.id %>/justifier" method="POST" class="flex flex-col sm:flex-row gap-2 md:min-w-[320px]">
+              <%- include('../partials/csrfField') %>
+              <input type="text" name="motif" required placeholder="Motif de justification..."
+                class="form-input flex-1" />
+              <button type="submit" class="btn-primary whitespace-nowrap">
+                <i class="fas fa-check mr-1"></i> Justifier
+              </button>
+            </form>
+          <% } %>
+        </div>
+      </div>
+    <% }) %>
+
+    <% if (absences.length === 0) { %>
+      <div class="card-widget text-center py-12">
+        <i class="fas fa-calendar-check text-4xl text-secondary mb-3"></i>
+        <p class="text-gray-500">Aucune absence enregistrée pour votre enfant.</p>
+      </div>
+    <% } %>
+  </div>
+</div>

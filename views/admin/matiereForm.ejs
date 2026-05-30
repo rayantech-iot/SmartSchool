@@ -1,0 +1,12 @@
+<div class="max-w-lg mx-auto space-y-4">
+  <h1 class="text-2xl font-bold font-alkalami">Modifier matière</h1>
+  <p class="text-sm text-gray-500">Les coefficients et volumes horaires se modifient dans l'onglet Classes.</p>
+  <form action="/admin/matieres/<%= matiere.id %>/update" method="POST" class="bg-white rounded-2xl border p-6 space-y-4">
+    <%- include('../partials/csrfField') %>
+    <input type="text" name="nom" required value="<%= matiere.nom %>" placeholder="Nom" class="w-full rounded-xl border px-3 py-2" />
+    <input type="text" name="code" value="<%= matiere.code || '' %>" placeholder="Code" class="w-full rounded-xl border px-3 py-2" />
+    <textarea name="description" rows="2" placeholder="Description" class="w-full rounded-xl border px-3 py-2"><%= matiere.description || '' %></textarea>
+    <button type="submit" class="w-full py-3 bg-primary text-white font-bold rounded-xl">Enregistrer</button>
+    <a href="/admin/matieres" class="block text-center text-sm text-gray-500">Annuler</a>
+  </form>
+</div>

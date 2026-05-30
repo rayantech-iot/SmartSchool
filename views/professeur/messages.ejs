@@ -1,0 +1,259 @@
+<!-- views/professeur/messages.ejs -->
+<div class="space-y-8 animate-fadeIn">
+  
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between border-b border-gray-200 pb-4">
+    <div>
+      <h1 class="text-3xl font-bold font-alkalami text-gray-800">Messagerie Interne</h1>
+      <p class="text-sm text-gray-500 mt-1">Communiquez en toute sécurité avec les élèves, les parents et les professeurs.</p>
+    </div>
+    <div class="mt-4 md:mt-0">
+      <a href="/<%= user.type %>/dashboard" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-xl transition-all inline-flex items-center">
+        <i class="fas fa-arrow-left mr-1"></i> Tableau de bord
+      </a>
+    </div>
+  </div>
+
+  <!-- Structure Messagerie -->
+  <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+    
+    <!-- Sidebar navigation (1/4) -->
+    <div class="space-y-4">
+      <a href="/<%= user.type %>/messages/compose"
+        class="w-full py-3 bg-primary hover:bg-secondary text-white font-bold rounded-xl shadow-md transition-all flex items-center justify-center space-x-2">
+        <i class="fas fa-edit"></i>
+        <span>Nouveau message</span>
+      </a>
+
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-1">
+        <a href="/<%= user.type %>/messages"
+          class="flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-semibold transition-all <%= section === 'inbox' ? 'bg-blue-50 text-primary' : 'text-gray-600 hover:bg-gray-50' %>">
+          <span class="flex items-center"><i class="fas fa-inbox mr-3 <%= section === 'inbox' ? 'text-primary' : 'text-gray-400' %>"></i>Boîte de réception</span>
+          <% if (typeof nonLus !== 'undefined' && nonLus > 0) { %>
+            <span class="px-2 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full"><%= nonLus %></span>
+          <% } %>
+        </a>
+
+        <a href="/<%= user.type %>/messages/sent"
+          class="flex items-center px-4 py-2.5 rounded-xl text-sm font-semibold transition-all <%= section === 'sent' ? 'bg-blue-50 text-primary' : 'text-gray-600 hover:bg-gray-50' %>">
+          <i class="fas fa-paper-plane mr-3 <%= section === 'sent' ? 'text-primary' : 'text-gray-400' %>"></i>
+          <span>Messages envoyés</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Contenu Principal (3/4) -->
+    <div class="lg:col-span-3 space-y-4">
+      
+      <% if (section === 'inbox' || section === 'sent') { %>
+        <!-- ============================================== -->
+        <!-- BOITE DE RÉCEPTION / ENVOYÉS                   -->
+        <!-- ============================================== -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div class="p-5 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+            <h2 class="font-bold text-gray-800 flex items-center uppercase text-xs tracking-wider">
+              <% if (section === 'inbox') { %>
+                <i class="fas fa-inbox text-primary mr-2"></i> Messages reçus
+              <% } else { %>
+                <i class="fas fa-paper-plane text-secondary mr-2"></i> Messages envoyés
+              <% } %>
+            </h2>
+            <span class="text-xs text-gray-400 font-semibold">
+              <%= messages.length %> Messages
+            </span>
+          </div>
+
+          <div class="divide-y divide-gray-150">
+            <% messages.forEach(m => { %>
+              <div onclick="readMessage('<%= m.id %>')"
+                class="p-4 hover:bg-slate-50/50 cursor-pointer transition-colors flex items-center justify-between gap-4 <%= section === 'inbox' && !m.lu ? 'bg-blue-50/20 font-bold border-l-4 border-blue-500' : '' %>">
+                
+                <div class="flex items-center space-x-3 min-w-[200px] max-w-[280px] truncate">
+                  <div class="w-8 h-8 bg-slate-100 text-slate-600 rounded-lg flex items-center justify-center font-bold text-xs flex-shrink-0">
+                    <% if (section === 'inbox') { %>
+                      <%= m.expediteur ? m.expediteur.nom.charAt(0) : 'U' %>
+                    <% } else { %>
+                      <%= m.destinataire ? m.destinataire.nom.charAt(0) : 'U' %>
+                    <% } %>
+                  </div>
+                  <div>
+                    <h4 class="text-xs text-gray-900 truncate">
+                      <% if (section === 'inbox') { %>
+                        <%= m.expediteur ? m.expediteur.prenom + ' ' + m.expediteur.nom : 'Utilisateur' %>
+                      <% } else { %>
+                        <%= m.destinataire ? m.destinataire.prenom + ' ' + m.destinataire.nom : 'Utilisateur' %>
+                      <% } %>
+                    </h4>
+                    <span class="text-[10px] text-gray-400 font-medium capitalize">
+                      <% if (section === 'inbox') { %>
+                        <%= m.expediteur ? m.expediteur.type : '' %>
+                      <% } else { %>
+                        <%= m.destinataire ? m.destinataire.type : '' %>
+                      <% } %>
+                    </span>
+                  </div>
+                </div>
+
+                <div class="flex-1 min-w-0">
+                  <h4 class="text-sm text-gray-800 truncate"><%= m.sujet %></h4>
+                  <p class="text-xs text-gray-400 truncate font-normal mt-0.5"><%= m.contenu %></p>
+                </div>
+
+                <div class="text-right text-[10px] text-gray-400 flex-shrink-0">
+                  <%= new Date(m.createdAt).toLocaleDateString('fr-FR') %>
+                </div>
+
+              </div>
+            <% }) %>
+
+            <% if (messages.length === 0) { %>
+              <div class="p-16 text-center text-gray-400">
+                <i class="fas fa-envelope-open text-4xl mb-3 text-gray-300"></i>
+                <p class="text-sm italic">Aucun message dans cette boîte.</p>
+              </div>
+            <% } %>
+          </div>
+        </div>
+
+      <% } else if (section === 'compose') { %>
+        <!-- ============================================== -->
+        <!-- COMPOSER UN MESSAGE                            -->
+        <!-- ============================================== -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+          <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+            <i class="fas fa-paper-plane text-primary mr-2"></i> Rédiger un message
+          </h2>
+
+          <form action="/<%= user.type %>/messages/send" method="POST" class="space-y-4">
+            <%- include('../partials/csrfField') %>
+            <% if (user.type === 'professeur') { %>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Type d'envoi</label>
+                <select name="type_envoi" id="type-envoi-select" onchange="toggleComposeFields()" required
+                  class="w-full rounded-xl border border-gray-300 px-3 py-2 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-secondary">
+                  <option value="individuel">Destinataire unique</option>
+                  <option value="classe">Classe entière (Diffusion globale)</option>
+                </select>
+              </div>
+
+              <!-- Envoi à une classe entière -->
+              <div id="field-compose-classe" class="hidden">
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Sélectionner la classe</label>
+                <select name="classe_id"
+                  class="w-full rounded-xl border border-gray-300 px-3 py-2 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-secondary">
+                  <% classes.forEach(c => { %>
+                    <option value="<%= c.id %>"><%= c.niveau %> — <%= c.nom %></option>
+                  <% }) %>
+                </select>
+              </div>
+            <% } else { %>
+              <input type="hidden" name="type_envoi" value="individuel">
+            <% } %>
+
+            <!-- Destinataire Unique -->
+            <div id="field-compose-individuel">
+              <label class="block text-sm font-semibold text-gray-700 mb-1">Destinataire</label>
+              <select name="destinataire_id" required
+                class="w-full rounded-xl border border-gray-300 px-3 py-2.5 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-secondary text-xs">
+                <option value="">-- Choisir un destinataire --</option>
+                <% destinataires.forEach(d => { %>
+                  <option value="<%= d.id %>">
+                    <%= d.prenom %> <%= d.nom %> (<%= d.type %> — <%= d.email %>)
+                  </option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-1">Sujet / Objet</label>
+              <input type="text" name="sujet" required placeholder="Sujet de votre message"
+                class="w-full rounded-xl border border-gray-300 px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-secondary">
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-1">Message / Contenu</label>
+              <textarea name="contenu" rows="6" required placeholder="Écrivez votre message ici..."
+                class="w-full rounded-xl border border-gray-300 px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-secondary"></textarea>
+            </div>
+
+            <button type="submit" 
+              class="w-full py-3 bg-primary hover:bg-secondary text-white font-bold rounded-xl shadow-md transition-all">
+              Envoyer le message
+            </button>
+          </form>
+        </div>
+      <% } %>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal Lecture Message -->
+<div id="read-message-modal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-gray-100 transform scale-95 transition-all">
+    
+    <div class="flex items-center space-x-3 text-primary mb-4 border-b border-gray-100 pb-3">
+      <div class="w-10 h-10 bg-blue-50 text-primary rounded-xl flex items-center justify-center">
+        <i class="fas fa-envelope-open text-lg"></i>
+      </div>
+      <div>
+        <h3 class="text-base font-bold text-gray-900" id="read-msg-sujet">Sujet du message</h3>
+        <p class="text-xs text-gray-400" id="read-msg-expediteur">De : </p>
+      </div>
+    </div>
+
+    <!-- Corps du message -->
+    <div class="bg-slate-50 p-4 rounded-xl text-sm text-gray-700 min-h-[120px] leading-relaxed whitespace-pre-line" id="read-msg-contenu">
+      Contenu...
+    </div>
+
+    <div class="flex justify-end pt-4">
+      <button type="button" onclick="closeReadMessageModal()"
+        class="px-4 py-2 bg-primary hover:bg-blue-800 text-white rounded-xl text-sm font-semibold transition-all">
+        Fermer
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleComposeFields() {
+    const select = document.getElementById('type-envoi-select');
+    if (!select) return;
+    const type = select.value;
+    
+    if (type === 'classe') {
+      document.getElementById('field-compose-classe').classList.remove('hidden');
+      document.getElementById('field-compose-individuel').classList.add('hidden');
+      document.getElementById('field-compose-individuel').querySelector('select').removeAttribute('required');
+    } else {
+      document.getElementById('field-compose-classe').classList.add('hidden');
+      document.getElementById('field-compose-individuel').classList.remove('hidden');
+      document.getElementById('field-compose-individuel').querySelector('select').setAttribute('required', 'required');
+    }
+  }
+
+  async function readMessage(msgId) {
+    try {
+      const res = await fetch('/<%= user.type %>/messages/' + msgId);
+      if (res.ok) {
+        const msg = await res.json();
+        document.getElementById('read-msg-sujet').innerText = msg.sujet;
+        document.getElementById('read-msg-expediteur').innerText = 'De : ' + (msg.expediteur ? msg.expediteur.prenom + ' ' + msg.expediteur.nom : 'Inconnu') + ' (' + new Date(msg.createdAt).toLocaleDateString('fr-FR') + ')';
+        document.getElementById('read-msg-contenu').innerText = msg.contenu;
+        document.getElementById('read-message-modal').classList.remove('hidden');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  function closeReadMessageModal() {
+    document.getElementById('read-message-modal').classList.add('hidden');
+    // Recharger la page pour enlever le badge gras non-lu
+    if (window.location.pathname.endsWith('/messages')) {
+      window.location.reload();
+    }
+  }
+</script>

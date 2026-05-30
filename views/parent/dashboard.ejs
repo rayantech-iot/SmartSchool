@@ -1,0 +1,132 @@
+<!-- views/parent/dashboard.ejs — Tableau de bord parent (hérite des données élève) -->
+<div class="space-y-8 animate-fadeIn">
+
+  <div class="page-header flex flex-col md:flex-row md:items-center md:justify-between">
+    <div>
+      <span class="px-2.5 py-1 bg-white/20 rounded-lg text-xs font-bold uppercase tracking-wider">Espace Parent</span>
+      <h1 class="text-3xl font-bold font-alkalami mt-2">Bonjour, <%= user.prenom %> <%= user.nom %></h1>
+      <p class="mt-1 text-blue-100 text-sm">Suivi scolaire de votre enfant</p>
+    </div>
+    <% if (moyenneGenerale) { %>
+      <div class="mt-4 md:mt-0 bg-white/15 rounded-xl px-6 py-3 text-center">
+        <p class="text-xs uppercase tracking-wider text-blue-100">Moyenne de l'enfant</p>
+        <p class="text-3xl font-bold"><%= moyenneGenerale %><span class="text-sm font-normal">/20</span></p>
+      </div>
+    <% } %>
+  </div>
+
+  <% if (typeof sansEnfant !== 'undefined' && sansEnfant) { %>
+  <div class="card-widget max-w-lg mx-auto">
+    <h2 class="text-lg font-bold mb-2">Lier votre enfant</h2>
+    <p class="text-sm text-gray-500 mb-4">Saisissez le matricule et la date de naissance de votre enfant pour accéder à son suivi scolaire.</p>
+    <form action="/parent/lier-enfant" method="POST" class="space-y-3">
+      <%- include('../partials/csrfField') %>
+      <input type="text" name="matricule" required placeholder="Matricule" class="w-full rounded-xl border px-3 py-2 uppercase" />
+      <input type="date" name="date_naissance" required class="w-full rounded-xl border px-3 py-2" />
+      <select name="lien" class="w-full rounded-xl border px-3 py-2">
+        <option value="père">Père</option><option value="mère">Mère</option><option value="tuteur" selected>Tuteur</option>
+      </select>
+      <button type="submit" class="w-full py-3 bg-primary text-white font-bold rounded-xl">Lier mon enfant</button>
+    </form>
+  </div>
+  <% } else { %>
+
+  <!-- Carte enfant -->
+  <div class="card-widget border-l-4 border-secondary">
+    <h2 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Mon enfant</h2>
+    <% if (enfant && enfant.utilisateur) { %>
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <p class="text-2xl font-bold text-gray-800"><%= enfant.utilisateur.prenom %> <%= enfant.utilisateur.nom %></p>
+          <p class="text-gray-500 text-sm">
+            <% if (enfant.classe) { %><%= enfant.classe.niveau %> — <%= enfant.classe.nom %><% } %>
+            <% if (enfant.matricule) { %> | Matricule : <%= enfant.matricule %><% } %>
+          </p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <a href="/parent/absences" class="btn-secondary text-xs">Absences</a>
+          <a href="/parent/emploiDuTemps" class="btn-primary text-xs">Emploi du temps</a>
+        </div>
+      </div>
+    <% } else { %>
+      <p class="text-red-500">Aucun enfant associé à ce compte parent.</p>
+    <% } %>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="card-widget text-center">
+      <i class="fas fa-calendar-times text-2xl text-red-500 mb-2"></i>
+      <p class="text-sm text-gray-400">Absences non justifiées</p>
+      <p class="text-2xl font-bold text-red-600"><%= absencesNonJustifiees.length %></p>
+    </div>
+    <div class="card-widget text-center">
+      <i class="fas fa-tasks text-2xl text-secondary mb-2"></i>
+      <p class="text-sm text-gray-400">Devoirs à venir</p>
+      <p class="text-2xl font-bold text-gray-800"><%= devoirsAVenir.length %></p>
+    </div>
+    <div class="card-widget text-center">
+      <i class="fas fa-envelope text-2xl text-secondary mb-2"></i>
+      <p class="text-sm text-gray-400">Messages non lus</p>
+      <p class="text-2xl font-bold text-gray-800"><%= messagesNonLus %></p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Absences à justifier -->
+    <div class="card-widget">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-bold text-gray-800 flex items-center">
+          <i class="fas fa-exclamation-circle text-red-500 mr-2"></i> Absences à justifier
+        </h2>
+        <a href="/parent/absences" class="text-xs text-secondary font-semibold">Gérer →</a>
+      </div>
+      <% absencesNonJustifiees.forEach(a => { %>
+        <div class="p-3 bg-red-50 rounded-xl border border-red-100 mb-2 flex justify-between items-center">
+          <span class="text-sm font-semibold text-gray-800"><%= new Date(a.date).toLocaleDateString('fr-FR') %></span>
+          <span class="text-xs text-red-600 font-bold">Non justifiée</span>
+        </div>
+      <% }) %>
+      <% if (absencesNonJustifiees.length === 0) { %>
+        <p class="text-sm text-gray-400 italic text-center py-4">Toutes les absences sont justifiées.</p>
+      <% } %>
+    </div>
+
+    <!-- Notes récentes -->
+    <div class="card-widget">
+      <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+        <i class="fas fa-star text-secondary mr-2"></i> Dernières notes
+      </h2>
+      <% notesRecentes.forEach(n => { %>
+        <div class="flex justify-between items-center py-2 border-b border-gray-50 last:border-0">
+          <span class="text-sm font-semibold text-gray-700"><%= n.matiere ? n.matiere.nom : '—' %></span>
+          <span class="font-bold <%= parseFloat(n.valeur) >= 10 ? 'text-secondary' : 'text-red-500' %>"><%= n.valeur %>/20</span>
+        </div>
+      <% }) %>
+      <% if (notesRecentes.length === 0) { %>
+        <p class="text-sm text-gray-400 italic text-center py-4">Aucune note récente.</p>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Devoirs -->
+  <div class="card-widget">
+    <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+      <i class="fas fa-tasks text-secondary mr-2"></i> Devoirs de l'enfant
+    </h2>
+    <div class="space-y-2">
+      <% devoirsAVenir.forEach(d => { %>
+        <div class="p-3 bg-gray-50 rounded-xl flex justify-between items-center">
+          <div>
+            <span class="text-[10px] font-bold text-primary bg-blue-100 px-2 py-0.5 rounded"><%= d.matiere ? d.matiere.nom : '' %></span>
+            <p class="font-semibold text-sm mt-1"><%= d.titre %></p>
+          </div>
+          <span class="text-xs font-mono text-red-600 font-bold"><%= new Date(d.date_limite).toLocaleDateString('fr-FR') %></span>
+        </div>
+      <% }) %>
+      <% if (devoirsAVenir.length === 0) { %>
+        <p class="text-sm text-gray-400 italic text-center py-4">Aucun devoir à venir.</p>
+      <% } %>
+    </div>
+  </div>
+  <% } %>
+</div>

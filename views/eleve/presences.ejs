@@ -1,0 +1,87 @@
+<!-- views/eleve/presences.ejs — Présences et absences de l'élève -->
+<div class="space-y-8 animate-fadeIn">
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between border-b border-gray-200 pb-4">
+    <div>
+      <h1 class="text-3xl font-bold font-alkalami text-gray-800">Mes Présences & Absences</h1>
+      <p class="text-sm text-gray-500 mt-1">Historique de vos présences et absences enregistrées.</p>
+    </div>
+    <a href="/eleve/dashboard" class="mt-4 md:mt-0 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-xl transition-all inline-flex items-center">
+      <i class="fas fa-arrow-left mr-1"></i> Mon espace
+    </a>
+  </div>
+
+  <!-- Statistiques -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="card-widget text-center">
+      <p class="text-sm text-gray-400 uppercase">Total absences</p>
+      <p class="text-3xl font-bold text-gray-800"><%= totalAbsences %></p>
+    </div>
+    <div class="card-widget text-center">
+      <p class="text-sm text-gray-400 uppercase">Justifiées</p>
+      <p class="text-3xl font-bold text-secondary"><%= absencesJustifiees %></p>
+    </div>
+    <div class="card-widget text-center">
+      <p class="text-sm text-gray-400 uppercase">Non justifiées</p>
+      <p class="text-3xl font-bold text-red-500"><%= absencesNonJustifiees %></p>
+    </div>
+  </div>
+
+  <!-- Signalement d'absence -->
+  <div class="card-widget border border-secondary bg-blue-50">
+    <h2 class="text-lg font-bold text-textDark mb-3 flex items-center">
+      <i class="fas fa-exclamation-triangle text-secondary mr-2"></i> Signaler une absence
+    </h2>
+    <p class="text-sm text-gray-600 mb-4">Signalez une absence prévue ou constatée. Votre parent pourra la justifier ensuite.</p>
+    <form action="/eleve/absences/signaler" method="POST" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <%- include('../partials/csrfField') %>
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">Date</label>
+        <input type="date" name="date" required class="form-input" value="<%= new Date().toISOString().split('T')[0] %>" />
+      </div>
+      <div class="md:col-span-2">
+        <label class="block text-sm font-semibold text-gray-700 mb-1">Motif (facultatif)</label>
+        <input type="text" name="motif" placeholder="Ex : Rendez-vous médical" class="form-input" />
+      </div>
+      <div class="md:col-span-3">
+        <button type="submit" class="btn-primary inline-flex items-center">
+          <i class="fas fa-paper-plane mr-2"></i> Signaler l'absence
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Liste des absences -->
+  <div class="card-widget overflow-hidden p-0">
+    <div class="p-4 border-b border-gray-100 bg-gray-50">
+      <h2 class="font-bold text-gray-800">Historique des absences</h2>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="table-smartschool">
+        <thead>
+          <tr><th>Date</th><th>Motif</th><th>Statut</th><th>Justifiée le</th></tr>
+        </thead>
+        <tbody>
+          <% absences.forEach(a => { %>
+            <tr>
+              <td class="font-mono text-sm"><%= new Date(a.date).toLocaleDateString('fr-FR') %></td>
+              <td class="text-gray-600 text-sm"><%= a.motif || '—' %></td>
+              <td>
+                <% if (a.justifiee) { %>
+                  <span class="px-2 py-0.5 bg-blue-100 text-primary text-xs font-bold rounded-full">Justifiée</span>
+                <% } else { %>
+                  <span class="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-bold rounded-full">Non justifiée</span>
+                <% } %>
+              </td>
+              <td class="text-gray-500 text-xs">
+                <%= a.date_justification ? new Date(a.date_justification).toLocaleDateString('fr-FR') : '—' %>
+              </td>
+            </tr>
+          <% }) %>
+          <% if (absences.length === 0) { %>
+            <tr><td colspan="4" class="text-center text-gray-400 py-8">Aucune absence enregistrée.</td></tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

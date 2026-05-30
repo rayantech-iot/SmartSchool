@@ -1,0 +1,51 @@
+<!-- views/parent/bulletin.ejs — Bulletins de l'enfant -->
+<div class="space-y-8 animate-fadeIn">
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between border-b border-gray-200 pb-4 no-print">
+    <div>
+      <h1 class="text-3xl font-bold font-alkalami text-gray-800">Bulletins de mon enfant</h1>
+      <p class="text-sm text-gray-500 mt-1">Consultez les bulletins scolaires officiels.</p>
+    </div>
+    <div class="mt-4 md:mt-0 space-x-2">
+      <% if (typeof bulletin !== 'undefined' && bulletin) { %>
+        <a href="/parent/bulletin" class="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-semibold rounded-xl inline-flex items-center">
+          <i class="fas fa-arrow-left mr-1"></i> Retour
+        </a>
+        <button onclick="window.print()" class="px-4 py-2 bg-primary text-white text-sm font-bold rounded-xl inline-flex items-center">
+          <i class="fas fa-print mr-1.5"></i> Imprimer
+        </button>
+      <% } else { %>
+        <a href="/parent/dashboard" class="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-semibold rounded-xl inline-flex items-center">
+          <i class="fas fa-arrow-left mr-1"></i> Tableau de bord
+        </a>
+      <% } %>
+    </div>
+  </div>
+
+  <% if (typeof bulletin !== 'undefined' && bulletin) { %>
+    <%- include('../partials/bulletinAffichage') %>
+  <% } else { %>
+    <div class="card-widget overflow-hidden p-0">
+      <table class="table-smartschool">
+        <thead>
+          <tr><th>Période</th><th>Année</th><th>Moyenne</th><th>Date</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+          <% if (typeof bulletins !== 'undefined') { bulletins.forEach(b => { %>
+            <tr>
+              <td class="font-semibold capitalize"><%= b.periode %></td>
+              <td><%= b.annee_scolaire %></td>
+              <td class="font-bold <%= b.moyenne_generale && parseFloat(b.moyenne_generale) >= 10 ? 'text-secondary' : 'text-red-500' %>">
+                <%= b.moyenne_generale || 'N/A' %>/20
+              </td>
+              <td class="text-xs text-gray-500"><%= new Date(b.date_generation).toLocaleDateString('fr-FR') %></td>
+              <td><a href="/parent/bulletin/<%= b.id %>" class="btn-secondary text-xs">Consulter</a></td>
+            </tr>
+          <% }) } %>
+          <% if (!bulletins || bulletins.length === 0) { %>
+            <tr><td colspan="5" class="text-center text-gray-400 py-10">Aucun bulletin disponible.</td></tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</div>

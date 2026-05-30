@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none" aria-label="SmartSchool">
+  <!-- Shield -->
+  <path d="M60 8 L95 22 V58 C95 78 78 95 60 104 C42 95 25 78 25 58 V22 Z" fill="#1E3A8A"/>
+  <!-- Check -->
+  <path d="M42 58 L54 70 L78 46" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Graduation cap -->
+  <path d="M30 32 L60 22 L90 32 L60 42 Z" fill="#3B82F6"/>
+  <rect x="52" y="42" width="16" height="8" rx="1" fill="#3B82F6"/>
+  <path d="M90 32 L90 38 L60 48 L30 38 L30 32" stroke="#3B82F6" stroke-width="2" fill="none"/>
+</svg>

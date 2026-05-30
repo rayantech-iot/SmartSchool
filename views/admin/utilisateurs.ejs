@@ -1,0 +1,114 @@
+﻿<div class="space-y-6">
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between border-b pb-4">
+    <div>
+      <h1 class="text-3xl font-bold font-alkalami">Utilisateurs</h1>
+      <p class="text-sm text-gray-500">Pagination, filtres et recherche en temps réel</p>
+    </div>
+    <a href="/admin/utilisateurs/nouveau" class="mt-3 md:mt-0 px-4 py-2 bg-primary text-white rounded-xl text-sm font-semibold"><i class="fas fa-user-plus mr-1"></i> Ajouter utilisateur</a>
+  </div>
+
+  <% if (lienReset && utilisateurResetEmail) { %>
+  <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+    <p class="font-semibold text-blue-900">Lien de réinitialisation pour <strong><%= utilisateurResetEmail %></strong> (valable 1 heure) :</p>
+    <div class="flex flex-wrap gap-2 mt-2 items-center">
+      <input type="text" readonly value="<%= lienReset %>" id="lien-reset-input" class="flex-1 min-w-[200px] font-mono text-sm rounded-xl border px-3 py-2 bg-white select-all" />
+      <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('lien-reset-input').value);this.textContent='Copié !'" class="px-4 py-2 bg-primary text-white rounded-xl text-sm">Copier</button>
+    </div>
+    <p class="text-xs text-gray-500 mt-2">Transmettez ce lien à l'utilisateur. Il choisira lui-même son nouveau mot de passe.</p>
+  </div>
+  <% } %>
+
+  <div class="bg-white rounded-2xl border shadow-sm p-4 flex flex-wrap gap-3">
+    <input type="search" id="search-q" placeholder="Rechercher nom ou email..." class="flex-1 min-w-[200px] rounded-xl border px-3 py-2 text-sm" />
+    <select id="filter-role" class="rounded-xl border px-3 py-2 text-sm">
+      <option value="tous">Tous les rôles</option>
+      <option value="admin">Admins</option>
+      <option value="professeur">Professeurs</option>
+      <option value="eleve">Élèves</option>
+      <option value="parent">Parents</option>
+    </select>
+    <select id="sort-by" class="rounded-xl border px-3 py-2 text-sm">
+      <option value="nom">Trier par nom</option>
+      <option value="date">Date de création</option>
+      <option value="role">Rôle</option>
+    </select>
+  </div>
+
+  <div class="bg-white rounded-2xl border shadow-sm overflow-hidden">
+    <table class="min-w-full text-sm">
+      <thead class="bg-gray-50"><tr>
+        <th class="px-4 py-3 text-left text-xs uppercase text-gray-500">Nom</th>
+        <th class="px-4 py-3 text-left text-xs uppercase text-gray-500">Prénom</th>
+        <th class="px-4 py-3 text-left text-xs uppercase text-gray-500">Email</th>
+        <th class="px-4 py-3 text-left text-xs uppercase text-gray-500">Rôle</th>
+        <th class="px-4 py-3 text-left text-xs uppercase text-gray-500">Statut</th>
+        <th class="px-4 py-3 text-left text-xs uppercase text-gray-500">Créé le</th>
+        <th class="px-4 py-3 text-right text-xs uppercase text-gray-500">Actions</th>
+      </tr></thead>
+      <tbody id="users-tbody" class="divide-y"></tbody>
+    </table>
+    <div id="pagination" class="p-4 flex justify-between items-center text-sm text-gray-500 border-t"></div>
+  </div>
+</div>
+
+<div id="toggle-modal" class="hidden fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl p-6 max-w-md w-full">
+    <p id="toggle-msg" class="text-sm text-gray-700 mb-4"></p>
+    <form id="toggle-form" method="POST" class="flex justify-end gap-2">
+      <%- include('../partials/csrfField') %>
+      <button type="button" onclick="document.getElementById('toggle-modal').classList.add('hidden')" class="px-4 py-2 border rounded-xl text-sm">Annuler</button>
+      <button type="submit" class="px-4 py-2 bg-primary text-white rounded-xl text-sm font-semibold">Confirmer</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  let page = 1, timer;
+  const csrf = document.querySelector('input[name="_csrf"]')?.value || '';
+
+  async function loadUsers() {
+    const q = document.getElementById('search-q').value;
+    const role = document.getElementById('filter-role').value;
+    const sort = document.getElementById('sort-by').value;
+    const res = await fetch(`/admin/api/utilisateurs?page=${page}&q=${encodeURIComponent(q)}&role=${role}&sort=${sort}`);
+    const data = await res.json();
+    const tbody = document.getElementById('users-tbody');
+    tbody.innerHTML = data.utilisateurs.map(u => `
+      <tr class="hover:bg-gray-50">
+        <td class="px-4 py-3 font-medium">${u.nom}</td>
+        <td class="px-4 py-3">${u.prenom}</td>
+        <td class="px-4 py-3 text-gray-600">${u.email}</td>
+        <td class="px-4 py-3"><span class="px-2 py-0.5 rounded-full text-xs bg-blue-100 text-primary">${u.type}</span></td>
+        <td class="px-4 py-3"><span class="px-2 py-0.5 rounded-full text-xs font-semibold ${u.statut==='actif'?'bg-green-100 text-green-800':'bg-red-100 text-red-800'}">${u.statut}</span></td>
+        <td class="px-4 py-3 text-xs text-gray-500">${new Date(u.created_at).toLocaleDateString('fr-FR')}</td>
+        <td class="px-4 py-3 text-right space-x-1">
+          <a href="/admin/utilisateurs/${u.id}/edit" class="p-1.5 text-gray-400 hover:text-primary" title="Modifier"><i class="fas fa-edit"></i></a>
+          <button type="button" onclick="confirmToggle(${u.id}, '${u.prenom} ${u.nom}', '${u.statut}')" class="p-1.5 text-gray-400 hover:text-orange-600" title="Activer/Désactiver"><i class="fas fa-toggle-${u.statut==='actif'?'on':'off'}"></i></button>
+          <form action="/admin/utilisateurs/${u.id}/reset-password" method="POST" class="inline" onsubmit="return confirm('Envoyer un email de réinitialisation (48 h) à ${u.prenom} ${u.nom} ?')">
+            <input type="hidden" name="_csrf" value="${csrf}" />
+            <button type="submit" class="p-1.5 text-gray-400 hover:text-blue-600" title="Renvoyer invitation par email"><i class="fas fa-envelope"></i></button>
+          </form>
+        </td>
+      </tr>`).join('') || '<tr><td colspan="7" class="p-8 text-center text-gray-400">Aucun utilisateur</td></tr>';
+
+    const p = data.pagination;
+    document.getElementById('pagination').innerHTML = `
+      <span>${p.total} utilisateur(s) — page ${p.page}/${p.totalPages}</span>
+      <div class="space-x-2">
+        <button ${p.page<=1?'disabled':''} onclick="page--;loadUsers()" class="px-3 py-1 border rounded-lg">Préc.</button>
+        <button ${p.page>=p.totalPages?'disabled':''} onclick="page++;loadUsers()" class="px-3 py-1 border rounded-lg">Suiv.</button>
+      </div>`;
+  }
+
+  function confirmToggle(id, name, statut) {
+    const action = statut === 'actif' ? 'désactiver' : 'réactiver';
+    document.getElementById('toggle-msg').textContent = `Êtes-vous sûr de vouloir ${action} le compte de ${name} ?`;
+    document.getElementById('toggle-form').action = '/admin/utilisateurs/' + id + '/toggle';
+    document.getElementById('toggle-modal').classList.remove('hidden');
+  }
+
+  document.getElementById('search-q').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(() => { page=1; loadUsers(); }, 300); });
+  document.getElementById('filter-role').addEventListener('change', () => { page=1; loadUsers(); });
+  document.getElementById('sort-by').addEventListener('change', () => { page=1; loadUsers(); });
+  loadUsers();
+</script>
