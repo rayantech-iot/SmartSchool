@@ -6,6 +6,9 @@
 require('dotenv').config();
 const { sequelize } = require('../config/database');
 
+// Import de tous les modèles pour que sync() connaisse le schéma complet
+require('../models');
+
 (async () => {
   try {
     await sequelize.authenticate();
