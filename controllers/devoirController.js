@@ -3,6 +3,8 @@
 // ============================================================
 const { validationResult } = require('express-validator');
 const { Devoir, Professeur, Classe, Matiere } = require('../models');
+const fs = require('fs');
+const path = require('path');
 
 /**
  * Liste les devoirs publiés par le professeur connecté
@@ -46,12 +48,19 @@ exports.store = async (req, res) => {
     const professeur = await Professeur.findOne({ where: { utilisateur_id: req.session.user.id } });
     const { titre, description, date_limite, classe_id, matiere_id } = req.body;
 
-    await Devoir.create({
+    const data = {
       titre, description, date_limite, classe_id, matiere_id,
       professeur_id: professeur.id,
       date_publication: new Date(),
       statut: 'publié'
-    });
+    };
+
+    if (req.file) {
+      data.fichier = req.file.filename;
+      data.fichier_nom = req.file.originalname;
+    }
+
+    await Devoir.create(data);
 
     req.flash('success', 'Devoir publié avec succès.');
     return res.redirect('/professeur/devoirs');
@@ -78,7 +87,19 @@ exports.update = async (req, res) => {
     }
 
     const { titre, description, date_limite, classe_id, matiere_id } = req.body;
-    await devoir.update({ titre, description, date_limite, classe_id, matiere_id });
+    const data = { titre, description, date_limite, classe_id, matiere_id };
+
+    if (req.file) {
+      // Supprimer l'ancien fichier s'il existe
+      if (devoir.fichier) {
+        const oldPath = path.join(__dirname, '../public/uploads', devoir.fichier);
+        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+      }
+      data.fichier = req.file.filename;
+      data.fichier_nom = req.file.originalname;
+    }
+
+    await devoir.update(data);
 
     req.flash('success', 'Devoir modifié avec succès.');
     return res.redirect('/professeur/devoirs');
@@ -102,6 +123,11 @@ exports.destroy = async (req, res) => {
     if (!devoir) {
       req.flash('error', 'Devoir introuvable ou accès non autorisé.');
       return res.redirect('back');
+    }
+
+    if (devoir.fichier) {
+      const filePath = path.join(__dirname, '../public/uploads', devoir.fichier);
+      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
     }
 
     await devoir.destroy();

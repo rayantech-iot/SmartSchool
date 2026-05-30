@@ -15,6 +15,7 @@ const messageController = require('../controllers/messageController');
 const emploiDuTempsController = require('../controllers/emploiDuTempsController');
 const { noteValidator } = require('../validators/noteValidator');
 const { devoirValidator } = require('../validators/devoirValidator');
+const upload = require('../middlewares/uploadMiddleware');
 
 // Middleware : authentifié + rôle professeur
 router.use(isAuthenticated, requireRole('professeur'), verifierChangementMotDePasse, noStore);
@@ -35,9 +36,20 @@ router.get('/presences', presenceController.index);
 router.post('/presences', presenceController.store);
 
 // --- Devoirs ---
+const uploadDevoir = upload.single('fichier');
+const uploadDevoirSafe = (req, res, next) => {
+  uploadDevoir(req, res, (err) => {
+    if (err) {
+      req.flash('error', err.message || 'Erreur lors du téléchargement du fichier.');
+      return res.redirect('back');
+    }
+    next();
+  });
+};
+
 router.get('/devoirs', devoirController.index);
-router.post('/devoirs', devoirValidator, devoirController.store);
-router.post('/devoirs/:id/update', devoirController.update);
+router.post('/devoirs', uploadDevoirSafe, devoirValidator, devoirController.store);
+router.post('/devoirs/:id/update', uploadDevoirSafe, devoirController.update);
 router.post('/devoirs/:id/delete', devoirController.destroy);
 
 // --- Bulletins ---

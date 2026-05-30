@@ -29,6 +29,14 @@ const Devoir = sequelize.define('Devoir', {
   statut: {
     type: DataTypes.ENUM('publié', 'brouillon', 'archivé'),
     defaultValue: 'publié'
+  },
+  fichier: {
+    type: DataTypes.STRING(500), allowNull: true,
+    comment: 'Chemin du fichier joint (PDF, DOCX, JPG, PNG)'
+  },
+  fichier_nom: {
+    type: DataTypes.STRING(255), allowNull: true,
+    comment: 'Nom original du fichier pour l\'affichage'
   }
 }, { tableName: 'devoirs' });
 
