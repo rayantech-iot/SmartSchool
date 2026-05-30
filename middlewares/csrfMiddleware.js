@@ -23,14 +23,9 @@ const genererToken = (req) => {
   return req.session.csrfToken;
 };
 
-/** Régénère le token après un POST validé */
+/** (Optionnel) Régénère le token — désactivé pour éviter de désynchroniser le client */
 const regenererToken = (req) => {
-  if (!req.session?.csrfSecret) return '';
-  req.session.csrfToken = crypto
-    .createHmac('sha256', req.session.csrfSecret)
-    .update('smartschool-csrf-v1')
-    .digest('hex');
-  return req.session.csrfToken;
+  return req.session?.csrfToken || '';
 };
 
 /**
