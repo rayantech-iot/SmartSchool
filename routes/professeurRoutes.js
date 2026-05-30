@@ -10,7 +10,6 @@ const professeurController = require('../controllers/professeurController');
 const noteController = require('../controllers/noteController');
 const presenceController = require('../controllers/presenceController');
 const devoirController = require('../controllers/devoirController');
-const bulletinController = require('../controllers/bulletinController');
 const messageController = require('../controllers/messageController');
 const emploiDuTempsController = require('../controllers/emploiDuTempsController');
 const { noteValidator } = require('../validators/noteValidator');
@@ -51,12 +50,6 @@ router.get('/devoirs', devoirController.index);
 router.post('/devoirs', uploadDevoirSafe, devoirValidator, devoirController.store);
 router.post('/devoirs/:id/update', uploadDevoirSafe, devoirController.update);
 router.post('/devoirs/:id/delete', devoirController.destroy);
-
-// --- Bulletins ---
-router.get('/bulletin', bulletinController.index);
-router.post('/bulletin/generer', bulletinController.generer);
-router.post('/bulletin/publier-classe', bulletinController.publierClasse);
-router.get('/bulletin/:id', bulletinController.show);
 
 // --- Messagerie ---
 router.get('/messages', messageController.inbox);
