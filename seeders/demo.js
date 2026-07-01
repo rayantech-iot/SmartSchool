@@ -1,7 +1,3 @@
-// ============================================================
-// seeders/demo.js — Données de démonstration SmartSchool
-// Usage : npm run seed
-// ============================================================
 require('dotenv').config();
 const bcrypt = require('bcryptjs');
 const path = require('path');

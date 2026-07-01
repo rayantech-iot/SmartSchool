@@ -1,4 +1,3 @@
-// validators/utilisateurValidator.js
 const { body } = require('express-validator');
 
 exports.createUserValidator = [

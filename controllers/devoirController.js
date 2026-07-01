@@ -1,14 +1,9 @@
-// ============================================================
-// controllers/devoirController.js — Gestion des devoirs
-// ============================================================
 const { validationResult } = require('express-validator');
 const { Devoir, Professeur, Classe, Matiere } = require('../models');
 const fs = require('fs');
 const path = require('path');
 
-/**
- * Liste les devoirs publiés par le professeur connecté
- */
+
 exports.index = async (req, res) => {
   try {
     const professeur = await Professeur.findOne({ where: { utilisateur_id: req.session.user.id } });
@@ -34,9 +29,6 @@ exports.index = async (req, res) => {
   }
 };
 
-/**
- * Crée un nouveau devoir
- */
 exports.store = async (req, res) => {
   const erreurs = validationResult(req);
   if (!erreurs.isEmpty()) {
@@ -71,9 +63,7 @@ exports.store = async (req, res) => {
   }
 };
 
-/**
- * Met à jour un devoir existant
- */
+
 exports.update = async (req, res) => {
   try {
     const professeur = await Professeur.findOne({ where: { utilisateur_id: req.session.user.id } });
@@ -90,7 +80,7 @@ exports.update = async (req, res) => {
     const data = { titre, description, date_limite, classe_id, matiere_id };
 
     if (req.file) {
-      // Supprimer l'ancien fichier s'il existe
+      
       if (devoir.fichier) {
         const oldPath = path.join(__dirname, '../public/uploads', devoir.fichier);
         if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
@@ -110,9 +100,7 @@ exports.update = async (req, res) => {
   }
 };
 
-/**
- * Supprime un devoir
- */
+
 exports.destroy = async (req, res) => {
   try {
     const professeur = await Professeur.findOne({ where: { utilisateur_id: req.session.user.id } });

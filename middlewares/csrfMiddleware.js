@@ -1,14 +1,6 @@
-// ============================================================
-// middlewares/csrfMiddleware.js — Protection CSRF (équivalent csurf)
-// Génère et valide un token par session pour tous les formulaires POST
-// ============================================================
 const crypto = require('crypto');
 
-/**
- * Génère ou récupère le token CSRF de la session courante
- * @param {object} req - Requête Express
- * @returns {string} Token CSRF
- */
+
 const genererToken = (req) => {
   if (!req.session) return '';
   if (!req.session.csrfSecret) {
@@ -23,24 +15,18 @@ const genererToken = (req) => {
   return req.session.csrfToken;
 };
 
-/** (Optionnel) Régénère le token — désactivé pour éviter de désynchroniser le client */
+
 const regenererToken = (req) => {
   return req.session?.csrfToken || '';
 };
 
-/**
- * Injecte le token CSRF dans res.locals pour les vues EJS
- * Usage dans les formulaires : <%- include('partials/csrfField') %>
- */
+
 exports.injectCsrfToken = (req, res, next) => {
   res.locals.csrfToken = genererToken(req);
   next();
 };
 
-/**
- * Valide le token CSRF sur les requêtes modifiant des données
- * Comportement identique à csurf({ cookie: false }) avec sessions Express
- */
+
 exports.csrfProtection = (req, res, next) => {
   const methodesSansCsrf = ['GET', 'HEAD', 'OPTIONS'];
   if (methodesSansCsrf.includes(req.method)) {

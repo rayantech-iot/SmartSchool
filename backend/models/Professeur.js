@@ -1,0 +1,36 @@
+const db = require('../config/db');
+const TABLE = 'professeurs';
+
+const Professeur = {
+  TABLE,
+  async findByPk(id) { return db.getOne(`SELECT * FROM \`${TABLE}\` WHERE id = ?`, [id]); },
+  async findOne(opts = {}) {
+    const keys = Object.keys(opts.where || {});
+    const clauses = keys.map(k => `\`${k}\` = ?`).join(' AND ');
+    return db.getOne(`SELECT * FROM \`${TABLE}\` WHERE ${clauses}`, Object.values(opts.where || {}));
+  },
+  async findAll(opts = {}) {
+    let sql = `SELECT * FROM \`${TABLE}\``;
+    const params = [];
+    if (opts.where) {
+      const keys = Object.keys(opts.where);
+      sql += ' WHERE ' + keys.map(k => `\`${k}\` = ?`).join(' AND ');
+      params.push(...Object.values(opts.where));
+    }
+    return db.query(sql, params);
+  },
+  async create(data) { return db.insert(TABLE, { ...data, created_at: new Date(), updated_at: new Date() }); },
+  async update(data, opts = {}) { return db.update(TABLE, { ...data, updated_at: new Date() }, opts.where || { id: data.id }); },
+  async destroy(opts = {}) { return db.remove(TABLE, opts.where || {}); },
+  async count(where = {}) { return db.count(TABLE, where); }
+};
+
+Professeur.trouverAvecUtilisateur = async function (utilisateurId) {
+  const sql = `SELECT p.*, u.nom, u.prenom, u.email
+               FROM \`${TABLE}\` p
+               JOIN utilisateurs u ON u.id = p.utilisateur_id
+               WHERE p.utilisateur_id = ?`;
+  return db.getOne(sql, [utilisateurId]);
+};
+
+module.exports = Professeur;

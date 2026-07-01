@@ -1,11 +1,8 @@
-// ============================================================
-// services/passwordResetService.js — Lien de réinitialisation (1h)
-// ============================================================
 const crypto = require('crypto');
 const { PasswordResetToken, Utilisateur } = require('../models');
 
-const DUREE_MS = 60 * 60 * 1000; // 1 heure
-const DUREE_ACTIVATION_MS = 48 * 60 * 60 * 1000; // 48 heures — première connexion
+const DUREE_MS = 60 * 60 * 1000; 
+const DUREE_ACTIVATION_MS = 48 * 60 * 60 * 1000; 
 
 async function creerToken(utilisateurId, dureeMs) {
   await PasswordResetToken.destroy({ where: { utilisateur_id: utilisateurId } });
@@ -19,35 +16,36 @@ async function creerToken(utilisateurId, dureeMs) {
   });
   return { token, expiresAt };
 }
-
-/**
- * Crée un token de réinitialisation pour un utilisateur (1 h)
- */
 async function creerLienReinitialisation(utilisateurId) {
   return creerToken(utilisateurId, DUREE_MS);
 }
-
-/**
- * Crée un token d'activation / première connexion (48 h)
- */
 async function creerLienActivation(utilisateurId) {
   return creerToken(utilisateurId, DUREE_ACTIVATION_MS);
 }
-
-/**
- * Valide un token et retourne l'utilisateur associé
- */
 async function validerToken(token) {
-  const enregistrement = await PasswordResetToken.findOne({
-    where: { token, utilise: false },
-    include: [{ model: Utilisateur, as: 'utilisateur' }]
-  });
+  const db = require('../config/db');
+  const enregistrement = await db.getOne(
+    `SELECT prt.*, u.id AS u_id, u.nom AS u_nom, u.prenom AS u_prenom,
+            u.email AS u_email, u.type AS u_type
+     FROM password_reset_tokens prt
+     JOIN utilisateurs u ON u.id = prt.utilisateur_id
+     WHERE prt.token = ? AND prt.utilise = false`,
+    [token]
+  );
 
   if (!enregistrement) return null;
   if (new Date() > enregistrement.expires_at) {
-    await enregistrement.destroy();
+    await PasswordResetToken.destroy({ where: { id: enregistrement.id } });
     return null;
   }
+
+  enregistrement.utilisateur = {
+    id: enregistrement.u_id,
+    nom: enregistrement.u_nom,
+    prenom: enregistrement.u_prenom,
+    email: enregistrement.u_email,
+    type: enregistrement.u_type
+  };
 
   return enregistrement;
 }

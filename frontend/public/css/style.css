@@ -1,0 +1,276 @@
+
+
+:root {
+  --ss-primary: #1E3A8A;
+  --ss-secondary: #3B82F6;
+  --ss-background: #F3F4F6;
+  --ss-text: #374151;
+  --ss-white: #FFFFFF;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  color: var(--ss-text);
+}
+
+h1, h2, h3, .font-alkalami {
+  font-family: 'Alkalami', serif;
+}
+
+
+.nav-link {
+  color: rgba(255, 255, 255, 0.92);
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background-color 0.2s, color 0.2s;
+  display: inline-flex;
+  align-items: center;
+}
+.nav-link:hover {
+  color: #fff;
+  background-color: rgba(59, 130, 246, 0.35);
+}
+.nav-active {
+  background-color: var(--ss-secondary);
+  color: #fff;
+  font-weight: 600;
+}
+.mobile-nav-link {
+  display: block;
+  color: rgba(255, 255, 255, 0.92);
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  transition: background-color 0.2s;
+}
+.mobile-nav-link:hover {
+  color: #fff;
+  background-color: rgba(59, 130, 246, 0.35);
+}
+
+
+.btn-primary {
+  background-color: var(--ss-primary);
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: background-color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  border: none;
+  cursor: pointer;
+}
+.btn-primary:hover {
+  background-color: #172554;
+}
+
+.btn-secondary {
+  background-color: var(--ss-secondary);
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: background-color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  border: none;
+  cursor: pointer;
+}
+.btn-secondary:hover {
+  background-color: var(--ss-primary);
+}
+
+.btn-submit {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background-color: var(--ss-primary);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.875rem;
+  border-radius: 0.75rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.btn-submit:hover {
+  background-color: var(--ss-secondary);
+}
+
+.btn-outline {
+  background-color: var(--ss-white);
+  color: var(--ss-text);
+  border: 1px solid #D1D5DB;
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: border-color 0.2s, color 0.2s;
+}
+.btn-outline:hover {
+  border-color: var(--ss-secondary);
+  color: var(--ss-primary);
+}
+
+
+.page-header {
+  background-color: var(--ss-primary);
+  color: #fff;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px rgba(30, 58, 138, 0.15);
+}
+
+.page-header-alt {
+  background-color: var(--ss-secondary);
+}
+
+
+.card-widget {
+  background: var(--ss-white);
+  border-radius: 1rem;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 1px 3px rgba(55, 65, 81, 0.08);
+  padding: 1.5rem;
+  transition: box-shadow 0.2s;
+}
+.card-widget:hover {
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.1);
+}
+
+
+.form-input,
+.input-brand {
+  width: 100%;
+  border: 1px solid #D1D5DB;
+  border-radius: 0.75rem;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  color: var(--ss-text);
+  background: var(--ss-white);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.form-input:focus,
+.input-brand:focus {
+  outline: none;
+  border-color: var(--ss-secondary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+}
+
+
+.table-smartschool {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+.table-smartschool thead {
+  background-color: var(--ss-primary);
+  color: #fff;
+}
+.table-smartschool thead th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+}
+.table-smartschool tbody tr:nth-child(even) {
+  background-color: var(--ss-background);
+}
+.table-smartschool tbody tr:nth-child(odd) {
+  background-color: var(--ss-white);
+}
+.table-smartschool tbody td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+
+.badge-admin { background: var(--ss-primary); color: #fff; }
+.badge-professeur { background: var(--ss-secondary); color: #fff; }
+.badge-eleve { background: #DBEAFE; color: var(--ss-primary); }
+.badge-parent { background: var(--ss-background); color: var(--ss-text); border: 1px solid #D1D5DB; }
+
+
+.text-success { color: var(--ss-secondary); }
+.text-note-ok { color: var(--ss-primary); font-weight: 700; }
+.text-note-ko { color: #DC2626; font-weight: 700; }
+.bg-tag { background: #DBEAFE; color: var(--ss-primary); }
+.bg-tag-muted { background: var(--ss-background); color: var(--ss-text); }
+
+
+.logo-box {
+  width: 5rem;
+  height: 5rem;
+  background: var(--ss-primary);
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.25);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeIn {
+  animation: fadeIn 0.35s ease-out forwards;
+}
+
+@media print {
+  body { background: white !important; }
+  nav, footer, .no-print, .flash-success, .flash-error { display: none !important; }
+  main { padding: 0 !important; max-width: 100% !important; }
+}
+
+@media (max-width: 768px) {
+  .page-header { padding: 1rem; border-radius: 0.75rem; }
+  .page-header h1 { font-size: 1.125rem; }
+  .page-header p, .page-header .subtitle { font-size: 0.8rem; }
+
+  .card-widget { padding: 1rem; }
+
+  .table-smartschool { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .table-smartschool thead th,
+  .table-smartschool tbody td { padding: 0.5rem 0.625rem; font-size: 0.75rem; white-space: nowrap; }
+
+  .nav-link { padding: 0.375rem 0.5rem; font-size: 0.8rem; }
+
+  .btn-primary, .btn-secondary, .btn-outline { padding: 0.375rem 0.75rem; font-size: 0.8rem; }
+  .btn-submit { padding: 0.625rem 0.875rem; font-size: 0.8rem; }
+
+  .form-input, .input-brand { padding: 0.5rem 0.75rem; font-size: 0.8rem; }
+
+  .logo-box { width: 3.5rem; height: 3.5rem; }
+}
+
+@media (max-width: 640px) {
+  .page-header { padding: 0.75rem; }
+  .page-header h1 { font-size: 1rem; }
+
+  .card-widget { padding: 0.75rem; }
+
+  .table-smartschool thead th,
+  .table-smartschool tbody td { padding: 0.375rem 0.5rem; font-size: 0.7rem; }
+
+  .btn-primary, .btn-secondary, .btn-outline { padding: 0.3rem 0.6rem; font-size: 0.75rem; }
+  .btn-submit { padding: 0.5rem 0.75rem; font-size: 0.75rem; }
+
+  .form-input, .input-brand { padding: 0.4rem 0.625rem; font-size: 0.75rem; }
+
+  .nav-link { padding: 0.3rem 0.4rem; font-size: 0.75rem; }
+
+  .logo-box { width: 3rem; height: 3rem; }
+}
+
+@media (max-width: 480px) {
+  .page-header h1 { font-size: 0.9rem; }
+  .card-widget { padding: 0.5rem; }
+  .nav-link { font-size: 0.7rem; padding: 0.25rem 0.3rem; }
+}
